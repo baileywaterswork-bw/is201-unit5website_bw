@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sheep Runner Pro 🐑</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(#aee1ff, #ffffff);
+    }
+
+    canvas {
+        display: block;
+        margin: auto;
+    }
+
+    #ui {
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    #gameOverScreen {
+        position: absolute;
+        top: 40%;
+        width: 100%;
+        text-align: center;
+        display: none;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin-top: 10px;
+        cursor: pointer;
+        border-radius: 8px;
+        border: none;
+        background: #333;
+        color: white;
+    }
+</style>
+</head>
+<body>
+
+<div id="ui">
+    Score: <span id="score">0</span> |
+    High Score: <span id="highScore">0</span>
+</div>
+
+<div id="gameOverScreen">
+    <h1>Game Over</h1>
+    <button onclick="restart()">Restart</button>
+</div>
+
+<canvas id="gameCanvas" width="900" height="350"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Sound effects
+const jumpSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+const hitSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+
+// High score
+let highScore = localStorage.getItem("sheepHighScore") || 0;
+document.getElementById("highScore").innerText = highScore;
+
+// Sheep
+let sheep = {
+    x: 100,
+    y: 260,
+    width: 50,
+    height: 40,
+    dy: 0,
+    gravity: 0.7,
+    jump: -13,
+    grounded: true,
+    ducking: false,
+    frame: 0
+};
+
+// Background layers
+let bg = {
+    hills: 0,
+    ground: 0
+};
+
+let obstacles = [];
+let frame = 0;
+let score = 0;
+let speed = 6;
+let gameOver = false;
+
+// Draw sheep (cartoon)
+function drawSheep() {
+    ctx.save();
+    ctx.translate(sheep.x, sheep.y);
+
+    // body
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(20, 20, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // head
+    ctx.fillStyle = "#444";
+    ctx.fillRect(30, 10, 15, 15);
+
+    // legs animation
+    ctx.strokeStyle = "#444";
+    ctx.lineWidth = 3;
+
+    let legOffset = Math.sin(frame * 0.3) * 5;
+
+    ctx.beginPath();
+    ctx.moveTo(10, 35);
+    ctx.lineTo(10, 45 + legOffset);
+    ctx.moveTo(25, 35);
+    ctx.lineTo(25, 45 - legOffset);
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+// Draw background
+function drawBackground() {
+    // sky already via CSS
+
+    // hills
+    ctx.fillStyle = "#9be28f";
+    ctx.beginPath();
+    ctx.arc(200 - bg.hills, 300, 200, 0, Math.PI);
+    ctx.arc(600 - bg.hills, 300, 250, 0, Math.PI);
+    ctx.fill();
+
+    // ground
+    ctx.fillStyle = "#4caf50";
+    ctx.fillRect(0, 300, canvas.width, 50);
+
+    bg.hills += 0.5;
+    bg.ground += speed;
+
+    if (bg.hills > canvas.width) bg.hills = 0;
+}
+
+// Obstacles
+function spawnObstacle() {
+    let type = Math.random() > 0.5 ? "bush" : "fence";
+
+    if (type === "bush") {
+        obstacles.push({
+            x: canvas.width,
+            y: 270,
+            width: 30,
+            height: 30,
+            type
+        });
+    } else {
+        obstacles.push({
+            x: canvas.width,
+            y: 240,
+            width: 25,
+            height: 60,
+            type
+        });
+    }
+}
+
+function drawObstacles() {
+    obstacles.forEach(o => {
+        if (o.type === "bush") {
+            ctx.fillStyle = "#2e7d32";
+            ctx.beginPath();
+            ctx.arc(o.x, o.y, 15, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.fillStyle = "#8d6e63";
+            ctx.fillRect(o.x, o.y, o.width, o.height);
+            ctx.fillRect(o.x - 10, o.y + 10, 10, 5);
+        }
+    });
+}
+
+function updateObstacles() {
+    obstacles.forEach(o => o.x -= speed);
+    obstacles = obstacles.filter(o => o.x > -50);
+}
+
+// Physics
+function updateSheep() {
+    sheep.dy += sheep.gravity;
+    sheep.y += sheep.dy;
+
+    if (sheep.y >= 260) {
+        sheep.y = 260;
+        sheep.dy = 0;
+        sheep.grounded = true;
+    }
+}
+
+// Collision
+function detectCollision() {
+    for (let o of obstacles) {
+        if (
+            sheep.x < o.x + o.width &&
+            sheep.x + sheep.width > o.x &&
+            sheep.y < o.y + o.height &&
+            sheep.y + sheep.height > o.y
+        ) {
+            endGame();
+        }
+    }
+}
+
+// Game loop
+function gameLoop() {
+    if (gameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawBackground();
+    drawSheep();
+    drawObstacles();
+
+    updateSheep();
+    updateObstacles();
+    detectCollision();
+
+    if (frame % 80 === 0) spawnObstacle();
+
+    frame++;
+    score++;
+    speed += 0.002;
+
+    document.getElementById("score").innerText = score;
+
+    requestAnimationFrame(gameLoop);
+}
+
+// Controls
+function jump() {
+    if (sheep.grounded) {
+        sheep.dy = sheep.jump;
+        sheep.grounded = false;
+        jumpSound.play();
+    }
+}
+
+function duck(state) {
+    sheep.ducking = state;
+    if (state) {
+        sheep.height = 25;
+        sheep.y = 275;
+    } else {
+        sheep.height = 40;
+        sheep.y = 260;
+    }
+}
+
+document.addEventListener("keydown", e => {
+    if (e.code === "Space") jump();
+    if (e.code === "ArrowDown") duck(true);
+});
+
+document.addEventListener("keyup", e => {
+    if (e.code === "ArrowDown") duck(false);
+});
+
+// Mobile controls
+canvas.addEventListener("touchstart", () => jump());
+canvas.addEventListener("touchend", () => duck(false));
+
+// End game
+function endGame() {
+    gameOver = true;
+    hitSound.play();
+
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("sheepHighScore", highScore);
+    }
+
+    document.getElementById("highScore").innerText = highScore;
+    document.getElementById("gameOverScreen").style.display = "block";
+}
+
+// Restart
+function restart() {
+    sheep.y = 260;
+    sheep.dy = 0;
+    obstacles = [];
+    score = 0;
+    speed = 6;
+    frame = 0;
+    gameOver = false;
+    document.getElementById("gameOverScreen").style.display = "none";
+    gameLoop();
+}
+
+// Start
+gameLoop();
+</script>
+
+</body>
+</html>

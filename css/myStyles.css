@@ -1,0 +1,188 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* BODY */
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: rgb(251, 243, 248) ;
+    color: #2d3436;
+    line-height: 1.6;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.header {
+    background-image: url('/assets/img/IMG_0002.JPG'); /* your image path */
+    background-size: cover;        /* makes it fill the space */
+    background-position: center;   /* keeps it centered */
+    background-repeat: no-repeat;
+
+    color: black;
+    text-align: center;
+    padding: 80px 20px;
+
+    position: relative;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+}
+
+.header p {
+    margin-top: 10px;
+    opacity: 0.9;
+}
+
+/* LINKS */
+a {
+    color: #4ca1af;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    opacity: 0.7;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+/* SECTIONS */
+.section {
+    background: white;
+    margin: 25px 0;
+    padding: 30px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover animation */
+.section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+}
+
+/* HEADINGS */
+h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+ol, ul {
+    text-align: left;
+    margin-top: 10px;
+    padding-left: 20px;
+}
+
+
+/* Add this new rule */
+.section ol {
+    margin: 10px auto 0 auto; /* centers the block */
+}
+
+
+
+/* IMAGE ROW */
+.image-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* Replace your existing img rule */
+img {
+    width: 100%;
+    max-width: 260px;
+    height: 200px;              /* Add this */
+    object-fit: cover;          /* Add this — crops to fill without stretching */
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+/* Image hover effect */
+img:hover {
+    transform: scale(1.05);
+}
+
+/* CAPTION */
+.caption {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #636e72;
+}
+
+/* VIDEO */
+iframe {
+    width: 100%;
+    max-width: 560px;
+    height: 315px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.tableauPlaceholder,
+.tableauPlaceholder object,
+.tableauPlaceholder iframe {
+    width: 100% !important;
+    min-width: 100% !important;
+}
+
+/* BACK TO TOP */
+.back-top {
+    font-weight: bold;
+}
+
+/* FADE-IN ANIMATION */
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+}
+
+.fade-in:nth-child(1) { animation-delay: 0.2s; }
+.fade-in:nth-child(2) { animation-delay: 0.4s; }
+.fade-in:nth-child(3) { animation-delay: 0.6s; }
+.fade-in:nth-child(4) { animation-delay: 0.8s; }
+.fade-in:nth-child(5) { animation-delay: 1s; }
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+    .header {
+        padding: 40px 15px;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .section {
+        padding: 20px;
+    }
+
+    iframe {
+        height: 200px;
+    }
+}
